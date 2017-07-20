@@ -5,6 +5,7 @@ using System.Collections;
 using CompCorpus.RunTime.Bricks;
 using System.Xml;
 using System.Text;
+using System.Collections.Generic;
 
 namespace XmlForPluginEmitter
 {
@@ -16,6 +17,7 @@ namespace XmlForPluginEmitter
         {
             buildXMLStringFromMontage(Program.CompileMain(@"C:\Users\j.folleas\Desktop\FichierTCcomp\source.txt", "", "", false));
             DocXLauncher.CreatSignatureDocxAndLaunchIt("adop.docx");
+            Console.ReadLine();
         }
 
 
@@ -84,46 +86,136 @@ namespace XmlForPluginEmitter
             xmlWriter.WriteAttributeString("id", "233");
             xmlWriter.WriteAttributeString("type", "Clause");
 
+            if (vc.expression != null) // we declar all the variable needed
+            {
+                insertVarIdOfExpression(vc.expression);
+            }
+
             xmlWriter.WriteStartElement("var");
-            xmlWriter.WriteAttributeString("wId", "V__" + computeWidInString(vc.text));
-            xmlWriter.WriteAttributeString("n", vc.text);
+            if (alreadyExiste(vc.name))
+            {
+                xmlWriter.WriteAttributeString("r", "true");
+            }
+            xmlWriter.WriteAttributeString("n", vc.name);
             xmlWriter.WriteAttributeString("c", computeType(vc));
-            //xmlWriter.WriteAttributeString("r", "true");
+            if (vc.expression != null)
+            {
+                xmlWriter.WriteAttributeString("e", writeXmlExpression(vc.expression));
+            }
             xmlWriter.WriteEndElement(); // var
 
             xmlWriter.WriteStartElement("html");
-            xmlWriter.WriteString("<var id=\"" + vc.text + "\">" + vc.text + "</var>");
+            xmlWriter.WriteString("<var id=\"" + vc.name + "\">" + vc.name + "</var>");
             xmlWriter.WriteEndElement(); // html
 
             xmlWriter.WriteEndElement(); // Clause
         }
 
-        private static string computeType(VariableCall vc)
+        private static void insertVarIdOfExpression(AbstractExpression expression)
         {
-            if (vc.typeString == ExpressionType.NOMBRE.ToString())
+            ArrayList listOfVarId = listOfVarIdInExpression(expression);
+            foreach (VariableId var in listOfVarId)
             {
-                return "N";
-            }else if (vc.typeString == ExpressionType.TEXTE.ToString())
-            {
-                return "S";
-            }
-            else
-            { 
-               throw new Exception(vc.GetType().ToString() + "This type of var is not already supported by the emiteur");
+                xmlWriter.WriteStartElement("var");
+                xmlWriter.WriteAttributeString("r", "true");
+                xmlWriter.WriteAttributeString("n", var.name);
+                xmlWriter.WriteAttributeString("c", computeType(new VariableCall(
+                    var.name, false, var.dataType.ToString())));
+                xmlWriter.WriteEndElement(); // var
             }
         }
 
-        private static string computeWidInString(string variableName)
+        private static ArrayList listOfVarIdInExpression(AbstractExpression expression)
         {
-            int potentialWid = variableNameListIndexByWid.IndexOf(variableName);
-            if (potentialWid >= 0)
+           
+            switch (expression)
+            {  
+                case Expression exp:
+                    ArrayList resExp = new ArrayList();
+                    resExp.AddRange(listOfVarIdInExpression(exp.expression1));
+                    if (exp.expression2 != null) // Binarie expression
+                    {
+                        resExp.AddRange(listOfVarIdInExpression(exp.expression2));
+                    }
+                    return resExp;
+                case VariableId varId:
+                    ArrayList resVarId = new ArrayList();
+                    resVarId.Add(varId);
+                    return resVarId;
+                default:
+                    return new ArrayList();
+            }
+        }
+
+        private static string writeXmlExpression(AbstractExpression expression)
+        {
+            switch (expression)
             {
-                return (potentialWid + 101).ToString();
+                case Expression exp:
+                    if (exp.expression2 != null) // Binarie expression
+                    {
+                        return writeXmlExpression(exp.expression1) + exp.SymboleToString() + writeXmlExpression(exp.expression2);
+                    }
+                    else  //Unaire expression
+                    {
+                        if (exp.symbole == ExpressionSymbole.NOT)
+                        {
+                            return exp.SymboleToString() + writeXmlExpression(exp.expression1);
+                        }
+                        else // parenteses
+                        {
+                            return "(" + writeXmlExpression(exp.expression1) + ")";
+                        }
+                    }
+                case VariableInteger varInt:
+                    return varInt.value.ToString();
+                case VariableFloat varFloat:
+                    return varFloat.value.ToString();
+                case VariableString varStr:
+                    return varStr.value;
+                case VariableId varId:
+                    return varId.name;
+                default:
+                    throw new NotImplementedException("the type of expression " + expression.Write() + "is not " +
+                        "is not already manage by the emitter");
+            }
+        }
+
+        private static string computeType(VariableCall vc)
+        {
+            string typeString = vc.typeString;
+            if (vc.typeString[0] == 'L')
+            {
+                typeString = vc.typeString.Substring(1);
+            }
+
+            if (typeString == ExpressionType.NOMBRE.ToString())
+            {
+                return "BD";
+            }else if (typeString == ExpressionType.TEXTE.ToString())
+            {
+                return "S";
+            } else if (typeString == ExpressionType.BOOL.ToString())
+            {
+                return "B";
+            }
+            else
+            { 
+                Console.WriteLine(vc.GetType().ToString() + "This type of var is not already supported by the emiteur");
+                throw new Exception(vc.GetType().ToString() + "This type of var is not already supported by the emiteur");
+            }
+        }
+
+        private static bool alreadyExiste(string variableName)
+        {
+            if (variableNameListIndexByWid.IndexOf(variableName) >= 0)
+            {
+                return true;
             }
             else
             {
                 variableNameListIndexByWid.Add(variableName);
-                return (variableNameListIndexByWid.Count + 100).ToString();
+                return false;
             }
         }
 
