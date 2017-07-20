@@ -12,7 +12,7 @@ namespace XmlForPluginEmitter
     public class XmlEmitter
     {
         private static XmlWriter xmlWriter = null;
-        private static ArrayList variableNameListIndexByWid = new ArrayList();
+        private static ArrayList variableNameListIndexByWid;
         static void Main(string[] args)
         {
             buildXMLStringFromMontage(Program.CompileMain(@"C:\Users\j.folleas\Desktop\FichierTCcomp\source.txt", "", "", false));
@@ -23,6 +23,7 @@ namespace XmlForPluginEmitter
 
         public static void buildXMLStringFromMontage(Montage montage)
         {
+            variableNameListIndexByWid = new ArrayList();
             try
             {
                 XmlWriterSettings settings = new XmlWriterSettings();
@@ -191,7 +192,7 @@ namespace XmlForPluginEmitter
 
             if (typeString == ExpressionType.NOMBRE.ToString())
             {
-                return "BD";
+                return "N";
             }else if (typeString == ExpressionType.TEXTE.ToString())
             {
                 return "S";
