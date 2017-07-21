@@ -55,9 +55,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="DeadTextXmlWriter.cs" />
     <Compile Include="DocXLauncher.cs" />
+    <Compile Include="OptionWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TitleXmlWriter.cs" />
+    <Compile Include="VariableCallXmlWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
