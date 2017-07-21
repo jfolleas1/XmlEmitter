@@ -17,7 +17,7 @@ namespace XmlForPluginEmitter
         {
             buildXMLStringFromMontage(Program.CompileMain(@"C:\Users\j.folleas\Desktop\FichierTCcomp\source.txt", "", "", false));
             DocXLauncher.CreatSignatureDocxAndLaunchIt("adop.docx");
-            Console.ReadLine();
+            //Console.ReadLine();
         }
 
 
@@ -134,9 +134,16 @@ namespace XmlForPluginEmitter
                 case Expression exp:
                     ArrayList resExp = new ArrayList();
                     resExp.AddRange(listOfVarIdInExpression(exp.expression1));
+
                     if (exp.expression2 != null) // Binarie expression
                     {
-                        resExp.AddRange(listOfVarIdInExpression(exp.expression2));
+                        foreach (VariableId vc in listOfVarIdInExpression(exp.expression2))
+                        {
+                            if (!ContainedInRes(vc, resExp))
+                            {
+                                resExp.Add(vc);
+                            }
+                        }
                     }
                     return resExp;
                 case VariableId varId:
@@ -146,6 +153,16 @@ namespace XmlForPluginEmitter
                 default:
                     return new ArrayList();
             }
+        }
+
+        private static bool ContainedInRes(VariableId vc, ArrayList resExp)
+        {
+            foreach (VariableId item in resExp)
+            {
+                if (item.name == vc.name)
+                    return true;
+            }
+            return false;
         }
 
         private static string writeXmlExpression(AbstractExpression expression)
@@ -169,9 +186,9 @@ namespace XmlForPluginEmitter
                         }
                     }
                 case VariableInteger varInt:
-                    return varInt.value.ToString();
+                    return varInt.Write();
                 case VariableFloat varFloat:
-                    return varFloat.value.ToString();
+                    return varFloat.Write();
                 case VariableString varStr:
                     return varStr.value;
                 case VariableId varId:
