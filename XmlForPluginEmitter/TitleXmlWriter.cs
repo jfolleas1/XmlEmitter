@@ -8,8 +8,8 @@ namespace XmlForPluginEmitter
         {
             XmlEmitter.xmlWriter.WriteStartElement("Parcours");
             XmlEmitter.xmlWriter.WriteAttributeString("type", "Parcours");
-            XmlEmitter.xmlWriter.WriteEndElement();
             XmlEmitter.xmlWriter.WriteAttributeString("t", tt.text);
+            XmlEmitter.xmlWriter.WriteEndElement();
         }
     }
 }
