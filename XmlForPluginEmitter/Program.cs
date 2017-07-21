@@ -3,27 +3,27 @@ using CompCorpus.RunTime;
 using CompCorpus;
 using System.Collections;
 using CompCorpus.RunTime.Bricks;
+using CompCorpus.RunTime.declaration;
 using System.Xml;
 using System.Text;
 using System.Collections.Generic;
+
 
 namespace XmlForPluginEmitter
 {
     public class XmlEmitter
     {
         private static XmlWriter xmlWriter = null;
-        private static ArrayList variableNameListIndexByWid;
         static void Main(string[] args)
         {
             buildXMLStringFromMontage(Program.CompileMain(@"C:\Users\j.folleas\Desktop\FichierTCcomp\source.txt", "", "", false));
             DocXLauncher.CreatSignatureDocxAndLaunchIt("adop.docx");
-            //Console.ReadLine();
+            Console.ReadLine();
         }
 
 
         public static void buildXMLStringFromMontage(Montage montage)
         {
-            variableNameListIndexByWid = new ArrayList();
             try
             {
                 XmlWriterSettings settings = new XmlWriterSettings();
@@ -34,14 +34,16 @@ namespace XmlForPluginEmitter
                 xmlWriter.WriteStartDocument();
                 xmlWriter.WriteStartElement("Noeud");
                 xmlWriter.WriteAttributeString("id", "123456");
-                xmlWriter.WriteAttributeString("n", montage.nameOfTheMontage);
                 xmlWriter.WriteAttributeString("qualiacte", "0");
-                xmlWriter.WriteAttributeString("t", montage.nameOfTheMontage);
                 xmlWriter.WriteAttributeString("thema", "");
                 xmlWriter.WriteAttributeString("type", "Parcours");
                 xmlWriter.WriteStartElement("Parcours");
-                xmlWriter.WriteAttributeString("n", "root");
+                xmlWriter.WriteAttributeString("n", montage.nameOfTheMontage);
+                xmlWriter.WriteAttributeString("t", montage.nameOfTheMontage);
                 xmlWriter.WriteAttributeString("type", "Parcours");
+
+                AddDeclarations(montage);
+
                 foreach (Brick bk in montage.listOfBricks)
                 {
                     WriteXmlForBrick(bk);
@@ -59,6 +61,25 @@ namespace XmlForPluginEmitter
                     xmlWriter.Close();
             }
 
+        }
+
+        private static void AddDeclarations(Montage montage)
+        {
+            xmlWriter.WriteStartElement("Parcours");
+            xmlWriter.WriteAttributeString("n", "Declarations");
+            xmlWriter.WriteAttributeString("type", "Parcours");
+            foreach (Declaration dec in montage.listOfDeclarations)
+            {
+                if (!dec.fromDataBase)
+                {
+                    xmlWriter.WriteStartElement("var");
+                    xmlWriter.WriteAttributeString("n", dec.name);
+                    xmlWriter.WriteAttributeString("c", computeType(new VariableCall(
+                    dec.name, false, dec.type.ToString())));
+                    xmlWriter.WriteEndElement(); // var }
+                }
+            }
+            xmlWriter.WriteEndElement();
         }
 
         private static void WriteXmlForBrick(Brick bk)
@@ -83,7 +104,7 @@ namespace XmlForPluginEmitter
 
         private static void WriteXmlForVariableCall(VariableCall vc)
         {
-            xmlWriter.WriteStartElement("Noeud");
+            xmlWriter.WriteStartElement("Parcours");
             xmlWriter.WriteAttributeString("id", "233");
             xmlWriter.WriteAttributeString("type", "Clause");
 
@@ -93,7 +114,7 @@ namespace XmlForPluginEmitter
             }
 
             xmlWriter.WriteStartElement("var");
-            if (alreadyExiste(vc.name))
+            if (vc.expression == null)
             {
                 xmlWriter.WriteAttributeString("r", "true");
             }
@@ -219,28 +240,15 @@ namespace XmlForPluginEmitter
             }
             else
             { 
-                Console.WriteLine(vc.GetType().ToString() + "This type of var is not already supported by the emiteur");
-                throw new Exception(vc.GetType().ToString() + "This type of var is not already supported by the emiteur");
-            }
-        }
-
-        private static bool alreadyExiste(string variableName)
-        {
-            if (variableNameListIndexByWid.IndexOf(variableName) >= 0)
-            {
-                return true;
-            }
-            else
-            {
-                variableNameListIndexByWid.Add(variableName);
-                return false;
+                Console.WriteLine(vc.typeString + "This type of var is not already supported by the emiteur");
+                throw new Exception(vc.typeString + "This type of var is not already supported by the emiteur");
             }
         }
 
 
         private static void WriteXmlForTitle(Title tt)
         {
-            xmlWriter.WriteStartElement("Noeud");
+            xmlWriter.WriteStartElement("Parcours");
             xmlWriter.WriteAttributeString("type", "Parcours");
             xmlWriter.WriteAttributeString("t", tt.text);
             xmlWriter.WriteEndElement();
@@ -250,7 +258,7 @@ namespace XmlForPluginEmitter
 
         private static void WriteXmlForDeadText(DeadText dt)
         {
-            xmlWriter.WriteStartElement("Noeud");
+            xmlWriter.WriteStartElement("Clause");
             xmlWriter.WriteAttributeString("id", "123");
             xmlWriter.WriteAttributeString("type", "Clause");
             xmlWriter.WriteStartElement("html");
