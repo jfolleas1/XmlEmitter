@@ -5,6 +5,7 @@ using CompCorpus.RunTime.Bricks;
 using CompCorpus.RunTime.declaration;
 using System.Xml;
 using System.Text;
+using System.Collections.Generic;
 
 
 namespace XmlForPluginEmitter
@@ -12,9 +13,12 @@ namespace XmlForPluginEmitter
     public class XmlEmitter
     {
         internal static XmlWriter xmlWriter = null;
+        internal static List<String> DBVariableName = new List<string>();
+        internal static int nextId = 1;
+
         static void Main(string[] args)
         {
-            //buildXMLStringFromMontage(Program.CompileMain(@"C:\Users\j.folleas\Desktop\FichierTCcomp\source.txt", "", "", false));
+            buildXMLStringFromMontage(Program.CompileMain(@"C:\Users\j.folleas\Desktop\FichierTCcomp\source.txt", "", "", false));
             DocXLauncher.CreatSignatureDocxAndLaunchIt("adop.docx");
             Console.ReadLine();
         }
@@ -31,11 +35,12 @@ namespace XmlForPluginEmitter
                 xmlWriter = XmlWriter.Create(Constants.graphePath, settings);
                 xmlWriter.WriteStartDocument();
                 xmlWriter.WriteStartElement("Noeud");
-                xmlWriter.WriteAttributeString("id", "123456");
+                xmlWriter.WriteAttributeString("id", (nextId++).ToString());
                 xmlWriter.WriteAttributeString("qualiacte", "0");
                 xmlWriter.WriteAttributeString("thema", "");
                 xmlWriter.WriteAttributeString("type", "Parcours");
                 xmlWriter.WriteStartElement("Parcours");
+                xmlWriter.WriteAttributeString("id", (nextId++).ToString());
                 xmlWriter.WriteAttributeString("n", montage.nameOfTheMontage);
                 xmlWriter.WriteAttributeString("t", montage.nameOfTheMontage);
                 xmlWriter.WriteAttributeString("type", "Parcours");
@@ -61,6 +66,7 @@ namespace XmlForPluginEmitter
         private static void AddDeclarations(Montage montage)
         {
             xmlWriter.WriteStartElement("Parcours");
+            xmlWriter.WriteAttributeString("id", (nextId++).ToString());
             xmlWriter.WriteAttributeString("n", "Declarations");
             xmlWriter.WriteAttributeString("type", "Parcours");
             foreach (Declaration dec in montage.listOfDeclarations)
@@ -72,6 +78,11 @@ namespace XmlForPluginEmitter
                     xmlWriter.WriteAttributeString("c", VariableCallXmlWriter.computeType(new VariableCall(
                     dec.name, false, dec.type.ToString())));
                     xmlWriter.WriteEndElement(); // var }
+                }
+
+                if (dec.fromDataBase)
+                {
+                    DBVariableName.Add(dec.name);
                 }
             }
             xmlWriter.WriteEndElement();

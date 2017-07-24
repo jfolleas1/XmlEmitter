@@ -7,7 +7,7 @@ namespace XmlForPluginEmitter
         internal static void WriteXmlForDeadText(DeadText dt)
         {
             XmlEmitter.xmlWriter.WriteStartElement("Clause");
-            XmlEmitter.xmlWriter.WriteAttributeString("id", "123");
+            XmlEmitter.xmlWriter.WriteAttributeString("id", (XmlEmitter.nextId++).ToString());
             XmlEmitter.xmlWriter.WriteAttributeString("type", "Clause");
             XmlEmitter.xmlWriter.WriteStartElement("html");
             XmlEmitter.xmlWriter.WriteString(dt.Write() + " ");

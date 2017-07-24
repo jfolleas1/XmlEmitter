@@ -7,6 +7,7 @@ namespace XmlForPluginEmitter
     {
         static private List<string> knownVIname = new List<string>();
 
+
         static private bool VIAlreadyKnown(string VIname)
         {
             if (knownVIname.Contains(VIname))
@@ -23,6 +24,7 @@ namespace XmlForPluginEmitter
         static public void WriteXmlForIteration(Iteration itr)
         {
             XmlEmitter.xmlWriter.WriteStartElement("Parcours");
+            XmlEmitter.xmlWriter.WriteAttributeString("id", (XmlEmitter.nextId++).ToString());
             XmlEmitter.xmlWriter.WriteAttributeString("type", "Parcours");
             XmlEmitter.xmlWriter.WriteAttributeString("a", "true");
             XmlEmitter.xmlWriter.WriteAttributeString("n", "iteration sur " + itr.listData.name);

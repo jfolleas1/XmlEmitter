@@ -7,6 +7,7 @@ namespace XmlForPluginEmitter
         static public void WriteXmlForOption(Option opt)
         {
             XmlEmitter.xmlWriter.WriteStartElement("Parcours");
+            XmlEmitter.xmlWriter.WriteAttributeString("id", (XmlEmitter.nextId++).ToString());
             XmlEmitter.xmlWriter.WriteAttributeString("type", "Parcours");
             XmlEmitter.xmlWriter.WriteAttributeString("n", opt.textOfOption.Substring(
                 1, opt.textOfOption.Length - 2));

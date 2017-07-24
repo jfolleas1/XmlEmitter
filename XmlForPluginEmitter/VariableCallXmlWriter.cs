@@ -9,8 +9,8 @@ namespace XmlForPluginEmitter
     {
         internal static void WriteXmlForVariableCall(VariableCall vc)
         {
-            XmlEmitter.xmlWriter.WriteStartElement("Parcours");
-            XmlEmitter.xmlWriter.WriteAttributeString("id", "233");
+            XmlEmitter.xmlWriter.WriteStartElement("Clause");
+            XmlEmitter.xmlWriter.WriteAttributeString("id", (XmlEmitter.nextId++).ToString());
             XmlEmitter.xmlWriter.WriteAttributeString("type", "Clause");
 
             if (vc.expression != null) // we declar all the variable needed
@@ -54,7 +54,6 @@ namespace XmlForPluginEmitter
 
         private static ArrayList listOfVarIdInExpression(AbstractExpression expression)
         {
-
             switch (expression)
             {
                 case Expression exp:
