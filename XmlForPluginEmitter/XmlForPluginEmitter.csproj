@@ -38,8 +38,9 @@
     <Reference Include="AspNetPager, Version=7.5.0.0, Culture=neutral, PublicKeyToken=fb0a0fe055d40fd4, processorArchitecture=MSIL">
       <HintPath>..\packages\AspNetPager.7.5.0.0\lib\AspNetPager.dll</HintPath>
     </Reference>
-    <Reference Include="CompCorpus">
-      <HintPath>..\..\..\..\..\Source\Repos\CompCorpus\CompCorpus\CompCorpus\bin\Debug\CompCorpus.dll</HintPath>
+    <Reference Include="CompCorpus, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\CompCorpusModel\CompCorpus\CompCorpus\bin\Debug\CompCorpus.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -57,6 +58,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="DeadTextXmlWriter.cs" />
     <Compile Include="DocXLauncher.cs" />
+    <Compile Include="IterationXmlWriter.cs" />
     <Compile Include="OptionWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

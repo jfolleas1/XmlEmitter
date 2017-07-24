@@ -1,12 +1,10 @@
 ﻿using System;
 using CompCorpus.RunTime;
 using CompCorpus;
-using System.Collections;
 using CompCorpus.RunTime.Bricks;
 using CompCorpus.RunTime.declaration;
 using System.Xml;
 using System.Text;
-using System.Collections.Generic;
 
 
 namespace XmlForPluginEmitter
@@ -16,9 +14,9 @@ namespace XmlForPluginEmitter
         internal static XmlWriter xmlWriter = null;
         static void Main(string[] args)
         {
-            buildXMLStringFromMontage(Program.CompileMain(@"C:\Users\j.folleas\Desktop\FichierTCcomp\source.txt", "", "", false));
+            //buildXMLStringFromMontage(Program.CompileMain(@"C:\Users\j.folleas\Desktop\FichierTCcomp\source.txt", "", "", false));
             DocXLauncher.CreatSignatureDocxAndLaunchIt("adop.docx");
-            //Console.ReadLine();
+            Console.ReadLine();
         }
 
 
@@ -67,7 +65,7 @@ namespace XmlForPluginEmitter
             xmlWriter.WriteAttributeString("type", "Parcours");
             foreach (Declaration dec in montage.listOfDeclarations)
             {
-                if (!dec.fromDataBase)
+                if (!dec.fromDataBase && !(dec.type == ExpressionType.LISTSTRUCT))
                 {
                     xmlWriter.WriteStartElement("var");
                     xmlWriter.WriteAttributeString("n", dec.name);
@@ -103,6 +101,9 @@ namespace XmlForPluginEmitter
                     break;
                 case Option opt:
                     OptionXmlWriter.WriteXmlForOption(opt);
+                    break;
+                case Iteration itr:
+                    IterationXmlWriter.WriteXmlForIteration(itr);
                     break;
                 default:
                     throw new NotImplementedException();
