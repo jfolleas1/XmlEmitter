@@ -12,8 +12,18 @@ namespace XmlForPluginEmitter
             XmlEmitter.xmlWriter.WriteStartElement("Clause");
             XmlEmitter.xmlWriter.WriteAttributeString("id", (XmlEmitter.nextId++).ToString());
             XmlEmitter.xmlWriter.WriteAttributeString("type", "Clause");
+            DeclarVariable(vc);
 
-            if (vc.expression != null) // we declar all the variable needed
+            XmlEmitter.xmlWriter.WriteStartElement("html");
+            XmlEmitter.xmlWriter.WriteString("<var id=\"" + vc.name + "\">" + vc.name + "</var>");
+            XmlEmitter.xmlWriter.WriteEndElement(); // html
+
+            XmlEmitter.xmlWriter.WriteEndElement(); // Clause
+        }
+
+        private static void DeclarVariable(VariableCall vc)
+        {
+            if (vc.expression != null && !XmlEmitter.DBVariableName.Contains(vc.name)) // we declar all the variable needed
             {
                 insertVarIdOfExpression(vc.expression);
             }
@@ -29,13 +39,8 @@ namespace XmlForPluginEmitter
             {
                 XmlEmitter.xmlWriter.WriteAttributeString("e", writeXmlExpression(vc.expression));
             }
+
             XmlEmitter.xmlWriter.WriteEndElement(); // var
-
-            XmlEmitter.xmlWriter.WriteStartElement("html");
-            XmlEmitter.xmlWriter.WriteString("<var id=\"" + vc.name + "\">" + vc.name + "</var>");
-            XmlEmitter.xmlWriter.WriteEndElement(); // html
-
-            XmlEmitter.xmlWriter.WriteEndElement(); // Clause
         }
 
         private static void insertVarIdOfExpression(AbstractExpression expression)
@@ -43,12 +48,10 @@ namespace XmlForPluginEmitter
             ArrayList listOfVarId = listOfVarIdInExpression(expression);
             foreach (VariableId var in listOfVarId)
             {
-                XmlEmitter.xmlWriter.WriteStartElement("var");
-                XmlEmitter.xmlWriter.WriteAttributeString("r", "true");
-                XmlEmitter.xmlWriter.WriteAttributeString("n", var.name);
-                XmlEmitter.xmlWriter.WriteAttributeString("c", computeType(new VariableCall(
-                    var.name, false, var.dataType.ToString())));
-                XmlEmitter.xmlWriter.WriteEndElement(); // var
+                if (!XmlEmitter.DBDeclarationName.Contains(var.name))
+                {
+                    DeclarVariable(new VariableCall(var.name,var.local,var.dataType.ToString()));
+                }
             }
         }
 

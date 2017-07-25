@@ -13,6 +13,7 @@ namespace XmlForPluginEmitter
     public class XmlEmitter
     {
         internal static XmlWriter xmlWriter = null;
+        internal static List<String> DBDeclarationName = new List<string>();
         internal static List<String> DBVariableName = new List<string>();
         internal static int nextId = 1;
 
@@ -79,13 +80,35 @@ namespace XmlForPluginEmitter
                     dec.name, false, dec.type.ToString())));
                     xmlWriter.WriteEndElement(); // var }
                 }
-
                 if (dec.fromDataBase)
                 {
-                    DBVariableName.Add(dec.name);
+                    AddDecFromDB(dec);
+                }
+            }
+            foreach (Affectation aff in montage.mapOfCalculExpressions.Values)
+            {
+                if (aff.fromDataBase)
+                {
+                    DBVariableName.Add(aff.variableName.name);
                 }
             }
             xmlWriter.WriteEndElement();
+        }
+
+        private static void AddDecFromDB(Declaration dec)
+        {
+           
+            if (dec is DeclarationStruct)
+            {
+                foreach (Tuple<string, string> decItem in (dec as DeclarationStruct).GetSymboles())
+                {
+                    DBDeclarationName.Add(decItem.Item1);
+                }
+            }
+            else
+            {
+                DBDeclarationName.Add(dec.name);
+            }
         }
 
         private static void AddBricks(Montage montage)
