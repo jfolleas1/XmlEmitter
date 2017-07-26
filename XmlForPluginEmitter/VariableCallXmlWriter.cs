@@ -15,7 +15,7 @@ namespace XmlForPluginEmitter
             DeclarVariable(vc);
 
             XmlEmitter.xmlWriter.WriteStartElement("html");
-            XmlEmitter.xmlWriter.WriteString("<var id=\"" + vc.name + "\">" + vc.name + "</var>");
+            XmlEmitter.xmlWriter.WriteString(" <var id=\"" + vc.name + "\">" + vc.name + "</var> ");
             XmlEmitter.xmlWriter.WriteEndElement(); // html
 
             XmlEmitter.xmlWriter.WriteEndElement(); // Clause
@@ -35,6 +35,10 @@ namespace XmlForPluginEmitter
             }
             XmlEmitter.xmlWriter.WriteAttributeString("n", vc.name);
             XmlEmitter.xmlWriter.WriteAttributeString("c", computeType(vc));
+            if (FromIteration(vc.name))
+            {
+                XmlEmitter.xmlWriter.WriteAttributeString("e", vc.name);
+            }
             if (vc.expression != null)
             {
                 XmlEmitter.xmlWriter.WriteAttributeString("e", writeXmlExpression(vc.expression));
@@ -48,11 +52,17 @@ namespace XmlForPluginEmitter
             ArrayList listOfVarId = listOfVarIdInExpression(expression);
             foreach (VariableId var in listOfVarId)
             {
-                if (!XmlEmitter.DBDeclarationName.Contains(var.name))
+                if (!XmlEmitter.DBDeclarationName.Contains(var.name) && !FromIteration(var.name))
                 {
                     DeclarVariable(new VariableCall(var.name,var.local,var.dataType.ToString()));
                 }
             }
+        }
+
+        private static bool FromIteration(string name)
+        {
+            char[] spliter = { '.' };
+            return IterationXmlWriter.pileOfIterator.Contains(name.Split(spliter)[0]);
         }
 
         private static ArrayList listOfVarIdInExpression(AbstractExpression expression)
