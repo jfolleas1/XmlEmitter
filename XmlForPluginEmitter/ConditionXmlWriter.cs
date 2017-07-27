@@ -5,20 +5,56 @@ using System.Collections;
 
 namespace XmlForPluginEmitter
 {
-    class VariableCallXmlWriter
+    class ConditionXmlWriter
     {
-        internal static void WriteXmlForVariableCall(VariableCall vc)
+        static public void WriteXmlForCondition(Condition cond)
         {
-            XmlEmitter.xmlWriter.WriteStartElement("Clause");
+            XmlEmitter.xmlWriter.WriteStartElement("Parcours");
             XmlEmitter.xmlWriter.WriteAttributeString("id", (XmlEmitter.nextId++).ToString());
-            XmlEmitter.xmlWriter.WriteAttributeString("type", "Clause");
-            DeclarVariable(vc);
+            XmlEmitter.xmlWriter.WriteAttributeString("type", "Parcours");
+            XmlEmitter.xmlWriter.WriteAttributeString("n", "Condition");
+            XmlEmitter.xmlWriter.WriteAttributeString("d", writeXmlExpression(cond.conditionExpression));
+            insertVarIdOfExpression(cond.conditionExpression);
+            foreach (Brick bk in cond.brickList)
+            {
+                XmlEmitter.WriteXmlForBrick(bk);
+            }
+            XmlEmitter.xmlWriter.WriteEndElement();
+        }
 
-            XmlEmitter.xmlWriter.WriteStartElement("html");
-            XmlEmitter.xmlWriter.WriteString(" <var id=\"" + vc.name + "\">" + vc.name + "</var> ");
-            XmlEmitter.xmlWriter.WriteEndElement(); // html
 
-            XmlEmitter.xmlWriter.WriteEndElement(); // Clause
+        private static string writeXmlExpression(AbstractExpression expression)
+        {
+            switch (expression)
+            {
+                case Expression exp:
+                    if (exp.expression2 != null) // Binarie expression
+                    {
+                        return writeXmlExpression(exp.expression1) + exp.SymboleToString() + writeXmlExpression(exp.expression2);
+                    }
+                    else  //Unaire expression
+                    {
+                        if (exp.symbole == ExpressionSymbole.NOT)
+                        {
+                            return exp.SymboleToString() + writeXmlExpression(exp.expression1);
+                        }
+                        else // parenteses
+                        {
+                            return "(" + writeXmlExpression(exp.expression1) + ")";
+                        }
+                    }
+                case VariableInteger varInt:
+                    return varInt.Write();
+                case VariableFloat varFloat:
+                    return varFloat.Write();
+                case VariableString varStr:
+                    return varStr.value;
+                case VariableId varId:
+                    return varId.name;
+                default:
+                    throw new NotImplementedException("the type of expression " + expression.Write() + "is not " +
+                        "is not already manage by the emitter");
+            }
         }
 
         private static void DeclarVariable(VariableCall vc)
@@ -43,7 +79,7 @@ namespace XmlForPluginEmitter
             {
                 XmlEmitter.xmlWriter.WriteAttributeString("e", writeXmlExpression(vc.expression));
             }
-
+            XmlEmitter.xmlWriter.WriteAttributeString("dep", "true");
             XmlEmitter.xmlWriter.WriteEndElement(); // var
         }
 
@@ -54,7 +90,7 @@ namespace XmlForPluginEmitter
             {
                 if (!XmlEmitter.DBDeclarationName.Contains(var.name) && !FromIteration(var.name))
                 {
-                    DeclarVariable(new VariableCall(var.name,var.local,var.dataType.ToString()));
+                    DeclarVariable(new VariableCall(var.name, var.local, var.dataType.ToString()));
                 }
             }
         }
@@ -103,40 +139,6 @@ namespace XmlForPluginEmitter
             return false;
         }
 
-        private static string writeXmlExpression(AbstractExpression expression)
-        {
-            switch (expression)
-            {
-                case Expression exp:
-                    if (exp.expression2 != null) // Binarie expression
-                    {
-                        return writeXmlExpression(exp.expression1) + exp.SymboleToString() + writeXmlExpression(exp.expression2);
-                    }
-                    else  //Unaire expression
-                    {
-                        if (exp.symbole == ExpressionSymbole.NOT)
-                        {
-                            return exp.SymboleToString() + writeXmlExpression(exp.expression1);
-                        }
-                        else // parenteses
-                        {
-                            return "(" + writeXmlExpression(exp.expression1) + ")";
-                        }
-                    }
-                case VariableInteger varInt:
-                    return varInt.Write();
-                case VariableFloat varFloat:
-                    return varFloat.Write();
-                case VariableString varStr:
-                    return varStr.value;
-                case VariableId varId:
-                    return varId.name;
-                default:
-                    throw new NotImplementedException("the type of expression " + expression.Write() + "is not " +
-                        "is not already manage by the emitter");
-            }
-        }
-
         internal static string computeType(VariableCall vc)
         {
             string typeString = vc.typeString;
@@ -162,17 +164,6 @@ namespace XmlForPluginEmitter
                 Console.WriteLine(vc.typeString + "This type of var is not already supported by the emiteur");
                 throw new Exception(vc.typeString + "This type of var is not already supported by the emiteur");
             }
-        }
-
-        internal static string slugify(string varname)
-        {
-            string[] splitedVarName = varname.Split('.');
-            string res = splitedVarName[0];
-            for (int i = 1; i < splitedVarName.Length; i++)
-            {
-                res += splitedVarName[i].Substring(0, 1).ToUpper() + splitedVarName[i].Substring(1);
-            }
-            return res;
         }
     }
 }

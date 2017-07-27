@@ -19,7 +19,7 @@ namespace XmlForPluginEmitter
 
         static void Main(string[] args)
         {
-            buildXMLStringFromMontage(Program.CompileMain(@"C:\Users\j.folleas\Desktop\FichierTCcomp\source.txt", "", "", false));
+            //buildXMLStringFromMontage(Program.CompileMain(@"C:\Users\j.folleas\Desktop\FichierTCcomp\source.txt", "", "", false));
             DocXLauncher.CreatSignatureDocxAndLaunchIt("adop.docx");
             Console.ReadLine();
         }
@@ -27,6 +27,7 @@ namespace XmlForPluginEmitter
 
         public static void buildXMLStringFromMontage(Montage montage)
         {
+            IterationXmlWriter.setknownVInameEmpty();
             try
             {
                 XmlWriterSettings settings = new XmlWriterSettings();
@@ -138,6 +139,9 @@ namespace XmlForPluginEmitter
                     break;
                 case Iteration itr:
                     IterationXmlWriter.WriteXmlForIteration(itr);
+                    break;
+                case Condition cond:
+                    ConditionXmlWriter.WriteXmlForCondition(cond);
                     break;
                 default:
                     throw new NotImplementedException();

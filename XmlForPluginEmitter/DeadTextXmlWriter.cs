@@ -7,13 +7,30 @@ namespace XmlForPluginEmitter
     { 
         internal static void WriteXmlForDeadText(DeadText dt)
         {
-            XmlEmitter.xmlWriter.WriteStartElement("Clause");
-            XmlEmitter.xmlWriter.WriteAttributeString("id", (XmlEmitter.nextId++).ToString());
-            XmlEmitter.xmlWriter.WriteAttributeString("type", "Clause");
-            XmlEmitter.xmlWriter.WriteStartElement("html");
-            XmlEmitter.xmlWriter.WriteString(" "+ InsertNewLine(dt.Write()) + " ");
-            XmlEmitter.xmlWriter.WriteEndElement();
-            XmlEmitter.xmlWriter.WriteEndElement();
+            string[] listeOfClauseWithoutNewLine = Regex.Split(dt.Write(), @"<br/>");
+            string last = listeOfClauseWithoutNewLine[listeOfClauseWithoutNewLine.Length - 1];
+            foreach (string text in listeOfClauseWithoutNewLine)
+            {
+                XmlEmitter.xmlWriter.WriteStartElement("Clause");
+                XmlEmitter.xmlWriter.WriteAttributeString("id", (XmlEmitter.nextId++).ToString());
+                XmlEmitter.xmlWriter.WriteAttributeString("type", "Clause");
+                XmlEmitter.xmlWriter.WriteStartElement("html");
+                XmlEmitter.xmlWriter.WriteString(" " + text + " ");
+                XmlEmitter.xmlWriter.WriteEndElement();
+                XmlEmitter.xmlWriter.WriteEndElement();
+
+                if (text != last)
+                {
+                    XmlEmitter.xmlWriter.WriteStartElement("Clause");
+                    XmlEmitter.xmlWriter.WriteAttributeString("id", "2664");
+                    XmlEmitter.xmlWriter.WriteAttributeString("type", "Clause");
+                    XmlEmitter.xmlWriter.WriteStartElement("html");
+                    XmlEmitter.xmlWriter.WriteString("<br/>\n&nbsp;");
+                    XmlEmitter.xmlWriter.WriteEndElement();
+                    XmlEmitter.xmlWriter.WriteEndElement();
+                }
+            }
+           
         }
 
 

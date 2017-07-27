@@ -8,7 +8,10 @@ namespace XmlForPluginEmitter
         static private List<string> knownVIname = new List<string>();
         static public List<string> pileOfIterator = new List<string>();
 
-
+        public static void setknownVInameEmpty()
+        {
+            knownVIname = new List<string>();
+        }
 
         static private bool VIAlreadyKnown(string VIname)
         {

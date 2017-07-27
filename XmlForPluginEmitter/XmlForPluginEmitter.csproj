@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConditionXmlWriter.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="DeadTextXmlWriter.cs" />
     <Compile Include="DocXLauncher.cs" />
