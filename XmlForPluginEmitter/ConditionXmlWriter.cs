@@ -50,7 +50,7 @@ namespace XmlForPluginEmitter
                 case VariableString varStr:
                     return varStr.value;
                 case VariableId varId:
-                    return varId.name;
+                    return slugify(varId.name);
                 default:
                     throw new NotImplementedException("the type of expression " + expression.Write() + "is not " +
                         "is not already manage by the emitter");
@@ -65,15 +65,15 @@ namespace XmlForPluginEmitter
             }
 
             XmlEmitter.xmlWriter.WriteStartElement("var");
-            if (vc.expression == null)
+            if (vc.expression == null && (!FromIteration(vc.name) || FromIterationReprise(vc.name)))
             {
                 XmlEmitter.xmlWriter.WriteAttributeString("r", "true");
             }
-            XmlEmitter.xmlWriter.WriteAttributeString("n", vc.name);
+            XmlEmitter.xmlWriter.WriteAttributeString("n", slugify(vc.name));
             XmlEmitter.xmlWriter.WriteAttributeString("c", computeType(vc));
-            if (FromIteration(vc.name))
+            if (FromIteration(vc.name) && !FromIterationNotFromDB(vc.name))
             {
-                XmlEmitter.xmlWriter.WriteAttributeString("e", vc.name);
+                XmlEmitter.xmlWriter.WriteAttributeString("r", "true");
             }
             if (vc.expression != null)
             {
@@ -88,7 +88,7 @@ namespace XmlForPluginEmitter
             ArrayList listOfVarId = listOfVarIdInExpression(expression);
             foreach (VariableId var in listOfVarId)
             {
-                if (!XmlEmitter.DBDeclarationName.Contains(var.name) && !FromIteration(var.name))
+                if (!XmlEmitter.DBDeclarationName.Contains(var.name))
                 {
                     DeclarVariable(new VariableCall(var.name, var.local, var.dataType.ToString()));
                 }
@@ -97,8 +97,37 @@ namespace XmlForPluginEmitter
 
         private static bool FromIteration(string name)
         {
-            char[] spliter = { '.' };
-            return IterationXmlWriter.pileOfIterator.Contains(name.Split(spliter)[0]);
+            foreach (string iterator in IterationXmlWriter.pileOfIterator)
+            {
+                if (name.StartsWith(iterator))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool FromIterationNotFromDB(string name)
+        {
+            foreach (string iterator in IterationXmlWriter.pileOfIteratorNotFromDB)
+            {
+                if (name.StartsWith(iterator))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool FromIterationReprise(string name)
+        {
+            foreach (string iterator in IterationXmlWriter.pileOfIteratorInReprise)
+            {
+                if (name.StartsWith(iterator))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static ArrayList listOfVarIdInExpression(AbstractExpression expression)
@@ -164,6 +193,17 @@ namespace XmlForPluginEmitter
                 Console.WriteLine(vc.typeString + "This type of var is not already supported by the emiteur");
                 throw new Exception(vc.typeString + "This type of var is not already supported by the emiteur");
             }
+        }
+
+        private static string slugify(string varname)
+        {
+            string[] splitedVarName = varname.Split('.');
+            string res = splitedVarName[0];
+            for (int i = 1; i < splitedVarName.Length; i++)
+            {
+                res += splitedVarName[i].Substring(0, 1).ToUpper() + splitedVarName[i].Substring(1);
+            }
+            return res;
         }
     }
 }

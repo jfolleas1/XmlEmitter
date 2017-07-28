@@ -15,7 +15,7 @@ namespace XmlForPluginEmitter
             DeclarVariable(vc);
 
             XmlEmitter.xmlWriter.WriteStartElement("html");
-            XmlEmitter.xmlWriter.WriteString(" <var id=\"" + vc.name + "\">" + vc.name + "</var> ");
+            XmlEmitter.xmlWriter.WriteString(" <var id=\"" + slugify(vc.name) + "\">" + slugify(vc.name) + "</var> ");
             XmlEmitter.xmlWriter.WriteEndElement(); // html
 
             XmlEmitter.xmlWriter.WriteEndElement(); // Clause
@@ -29,22 +29,53 @@ namespace XmlForPluginEmitter
             }
 
             XmlEmitter.xmlWriter.WriteStartElement("var");
-            if (vc.expression == null)
+            if (vc.expression == null && (!FromIteration(vc.name) || FromIterationReprise(vc.name))) // et non iteration ou en reprise l'iteration est en reprise
             {
                 XmlEmitter.xmlWriter.WriteAttributeString("r", "true");
             }
-            XmlEmitter.xmlWriter.WriteAttributeString("n", vc.name);
+            XmlEmitter.xmlWriter.WriteAttributeString("n", slugify(vc.name));
             XmlEmitter.xmlWriter.WriteAttributeString("c", computeType(vc));
-            if (FromIteration(vc.name))
+            if (FromIteration(vc.name) && !FromIterationNotFromDB(vc.name)) // stop here à changer seulement si frome bd iteration
             {
                 XmlEmitter.xmlWriter.WriteAttributeString("e", vc.name);
             }
             if (vc.expression != null)
             {
-                XmlEmitter.xmlWriter.WriteAttributeString("e", writeXmlExpression(vc.expression));
+                //Regarder si la variable vien de la bd 
+                if (FromBDVar(vc.name))
+                {
+                    XmlEmitter.xmlWriter.WriteAttributeString("e", writeXmlExpression(vc.expression));
+                }
+                else
+                {
+                    XmlEmitter.xmlWriter.WriteAttributeString("e", writeXmlExpression(vc.expression,true));
+                }
             }
 
             XmlEmitter.xmlWriter.WriteEndElement(); // var
+        }
+
+        private static bool FromBDVar(string name)
+        {
+            return name.StartsWith("BD.");
+        }
+
+        private static bool FromIterationReprise(string name)
+        {
+            char[] spliter = { '.' };
+            return IterationXmlWriter.pileOfIteratorInReprise.Contains(name.Split(spliter)[0]);
+        }
+
+        private static bool FromIterationNotFromDB(string name)
+        {
+            char[] spliter = { '.' };
+            return IterationXmlWriter.pileOfIteratorNotFromDB.Contains(name.Split(spliter)[0]);
+        }
+
+        private static bool FromIteration(string name)
+        {
+            char[] spliter = { '.' };
+            return IterationXmlWriter.pileOfIterator.Contains(name.Split(spliter)[0]);
         }
 
         private static void insertVarIdOfExpression(AbstractExpression expression)
@@ -57,12 +88,6 @@ namespace XmlForPluginEmitter
                     DeclarVariable(new VariableCall(var.name,var.local,var.dataType.ToString()));
                 }
             }
-        }
-
-        private static bool FromIteration(string name)
-        {
-            char[] spliter = { '.' };
-            return IterationXmlWriter.pileOfIterator.Contains(name.Split(spliter)[0]);
         }
 
         private static ArrayList listOfVarIdInExpression(AbstractExpression expression)
@@ -103,24 +128,24 @@ namespace XmlForPluginEmitter
             return false;
         }
 
-        private static string writeXmlExpression(AbstractExpression expression)
+        private static string writeXmlExpression(AbstractExpression expression, bool withSlug = false)
         {
             switch (expression)
             {
                 case Expression exp:
                     if (exp.expression2 != null) // Binarie expression
                     {
-                        return writeXmlExpression(exp.expression1) + exp.SymboleToString() + writeXmlExpression(exp.expression2);
+                        return writeXmlExpression(exp.expression1, withSlug) + exp.SymboleToString() + writeXmlExpression(exp.expression2, withSlug);
                     }
                     else  //Unaire expression
                     {
                         if (exp.symbole == ExpressionSymbole.NOT)
                         {
-                            return exp.SymboleToString() + writeXmlExpression(exp.expression1);
+                            return exp.SymboleToString() + writeXmlExpression(exp.expression1, withSlug);
                         }
                         else // parenteses
                         {
-                            return "(" + writeXmlExpression(exp.expression1) + ")";
+                            return "(" + writeXmlExpression(exp.expression1, withSlug) + ")";
                         }
                     }
                 case VariableInteger varInt:
@@ -130,7 +155,10 @@ namespace XmlForPluginEmitter
                 case VariableString varStr:
                     return varStr.value;
                 case VariableId varId:
-                    return varId.name;
+                    if (withSlug)
+                        return slugify(varId.name);
+                    else
+                        return varId.name;
                 default:
                     throw new NotImplementedException("the type of expression " + expression.Write() + "is not " +
                         "is not already manage by the emitter");

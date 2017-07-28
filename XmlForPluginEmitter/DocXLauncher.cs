@@ -23,7 +23,9 @@ namespace XmlForPluginEmitter
                 Process.Start(zipPath);
             }
             catch (Exception e)
-            { }
+            {
+
+            }
         }
     }
 }
