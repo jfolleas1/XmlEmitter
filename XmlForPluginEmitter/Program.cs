@@ -143,6 +143,9 @@ namespace XmlForPluginEmitter
                 case Condition cond:
                     ConditionXmlWriter.WriteXmlForCondition(cond);
                     break;
+                case Choice chx:
+                    ChoixXmlWriter.WriteXmlForChoix(chx);
+                    break;
                 default:
                     throw new NotImplementedException();
 
